@@ -26,6 +26,11 @@ jobs:
 
           SIG=$(openssl dgst -sha256 -hmac "$SECRET" payload.json | sed 's/^.* //')
 
+          echo "--- JSON Payload ---"
+         cat payload.json
+         echo "--- Signature ---"
+         echo "sha256:$SIG"
+
           curl -X POST https://docs.clogic.dev/build-docs \
           -H "Content-Type: application/json" \
           -H "X-Hub-Signature-256: sha256:$SIG" \
