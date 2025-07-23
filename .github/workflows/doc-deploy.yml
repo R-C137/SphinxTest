@@ -10,16 +10,17 @@ on:
 jobs:
   call-vps-webhook:
     runs-on: ubuntu-latest
+    env:
+      SECRET: ${{ secrets.SPHINXTESTSECRET }}
+      REPO_NAME: ${{ github.event.repository.name }}
+      REPO_PATH: "https://github.com/R-C137/SphinxTest.git"
+	
 
     steps:
       - name: Get branch name
         run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
       - name: Call VPS webhook
-        env:
-          SECRET: ${{ secrets.SPHINXTESTSECRET }}
-          REPO_NAME: ${{ github.event.repository.name }}
-	  REPO_PATH: "https://github.com/R-C137/SphinxTest.git"
         run: |
           JSON=$(jq -n \
             --arg repo "$REPO_NAME" \
