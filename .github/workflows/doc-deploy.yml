@@ -20,7 +20,7 @@ jobs:
 
       - name: Call VPS webhook
         env:
-          SECRET: ${{ secrets.SPHINXTESTSECRET }}
+          SECRET: "fzp-FNU.wak_kdn4fhm"
         run: |
           REPO_PATH="https://github.com/R-C137/$REPO_NAME.git"
 
