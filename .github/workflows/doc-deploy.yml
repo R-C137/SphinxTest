@@ -3,30 +3,37 @@ name: Trigger VPS Doc Build
 on:
   push:
     branches:
-      - 'main'        # All branches (or use ['main', 'dev'] if you prefer)
+      - 'main'
     paths:
-      - 'docs/**'  # Only trigger when docs change (optional)
+      - 'docs/**'
 
 jobs:
   call-vps-webhook:
     runs-on: ubuntu-latest
-    env:
-      SECRET: ${{ secrets.SPHINXTESTSECRET }}
-      REPO_NAME: ${{ github.event.repository.name }}
-      REPO_PATH: "https://github.com/R-C137/SphinxTest.git"
+
     steps:
-      - name: Get branch name
+      - name: Set BRANCH_NAME
         run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
+      - name: Set REPO_NAME
+        run: echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
+
       - name: Call VPS webhook
+        env:
+          SECRET: ${{ secrets.SPHINXTESTSECRET }}
         run: |
+          REPO_PATH="https://github.com/R-C137/$REPO_NAME.git"
+
           JSON=$(jq -n \
             --arg repo "$REPO_NAME" \
             --arg branch "$BRANCH_NAME" \
             --arg path "$REPO_PATH" \
             '{repo: $repo, branch: $branch, repo_path: $path}')
 
+          echo "JSON: $JSON"
+
           SIG=$(echo -n "$JSON" | openssl dgst -sha256 -hmac "$SECRET" | sed 's/^.* //')
+          echo "Signature: sha256:$SIG"
 
           curl -X POST https://docs.clogic.dev/build-docs \
             -H "Content-Type: application/json" \
