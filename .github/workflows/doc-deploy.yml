@@ -20,22 +20,13 @@ jobs:
 
       - name: Call VPS webhook
         env:
-          SECRET: "fzp-FNU.wak_kdn4fhm"
+          SECRET: ${{ secrets.SPHINXTESTSECRET }}
         run: |
-          REPO_PATH="https://github.com/R-C137/$REPO_NAME.git"
+          echo '{"repo":"SphinxTest","branch":"main","repo_path":"https://github.com/R-C137/SphinxTest.git"}' > payload.json
 
-          JSON=$(jq -n \
-            --arg repo "$REPO_NAME" \
-            --arg branch "$BRANCH_NAME" \
-            --arg path "$REPO_PATH" \
-            '{repo: $repo, branch: $branch, repo_path: $path}')
-
-          echo "JSON: $JSON"
-
-          SIG=$(echo -n "$JSON" | openssl dgst -sha256 -hmac "$SECRET" | sed 's/^.* //')
-          echo "Signature: sha256:$SIG"
+          SIG=$(openssl dgst -sha256 -hmac "$SECRET" payload.json | sed 's/^.* //')
 
           curl -X POST https://docs.clogic.dev/build-docs \
-            -H "Content-Type: application/json" \
-            -H "X-Hub-Signature-256: sha256:$SIG" \
-            -d "$JSON"
+          -H "Content-Type: application/json" \
+          -H "X-Hub-Signature-256: sha256:$SIG" \
+          --data-binary "@payload.json"
